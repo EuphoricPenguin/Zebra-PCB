@@ -58,6 +58,14 @@ if [ "$MSYS2" = "1" ] || [ -n "$MSYSTEM" ]; then
   # Native MSYS2 build
   COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../Toolchain-msys2.cmake"
   echo "$(color 2 'Detected MSYS2 environment:') $MSYSTEM"
+  
+  # Initialize and update submodules for MSYS2
+  echo "$(color 2 'Initializing git submodules...')"
+  git submodule update --init --recursive
+  if [ $? -ne 0 ]; then
+    color 1 "Failed to initialize submodules"
+    exit 1
+  fi
 elif [ "$CROSS" = "mingw64" ]; then
   # Cross-compilation from Linux
   COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../Toolchain-mingw64.cmake"
