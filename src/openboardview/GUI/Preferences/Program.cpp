@@ -6,6 +6,7 @@
 #include "Program.h"
 
 #include "imgui/imgui.h"
+#include "imgui/misc/cpp/imgui_stdlib.h"
 
 #include "GUI/DPI.h"
 #include "GUI/widgets.h"
@@ -89,7 +90,7 @@ void Program::render() {
 
 		RightAlignedText("PDF software executable", DPI(250));
 		ImGui::SameLine();
-		ImGui::InputText("##pdfSoftwarePath", &config.pdfSoftwarePath;
+		ImGui::InputText("##pdfSoftwarePath", &config.pdfSoftwarePath);
 		ImGui::SameLine();
 		if (ImGui::Button("Browse##pdfSoftwarePath")) {
 			auto path = show_file_picker();

@@ -17,7 +17,8 @@ Usage: $(color 4 ${0}) [--$(color 5 recompile)] [--$(color 1 debug)] — Build $
 
 All extra parameters are passed to cmake.
 Environment variables:
-          CROSS         — Set to "mingw64" to cross-compile for Windows
+          CROSS         — Set to "mingw64" to cross-compile for Windows from Linux
+          MSYS2         — Set to "1" to build natively on Windows using MSYS2
 EOH
 }
 
@@ -52,8 +53,15 @@ for arg in "$@"; do
   esac
 done
 
-if [ "$CROSS" = "mingw64" ]; then
+# Detect build environment and set appropriate toolchain
+if [ "$MSYS2" = "1" ] || [ -n "$MSYSTEM" ]; then
+  # Native MSYS2 build
+  COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../Toolchain-msys2.cmake"
+  echo "$(color 2 'Detected MSYS2 environment:') $MSYSTEM"
+elif [ "$CROSS" = "mingw64" ]; then
+  # Cross-compilation from Linux
   COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../Toolchain-mingw64.cmake"
+  echo "$(color 2 'Cross-compiling for Windows from Linux')"
 fi
 
 if [ $THREADS -lt 1 ]; then

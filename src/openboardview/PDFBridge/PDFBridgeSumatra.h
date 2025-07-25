@@ -12,6 +12,11 @@
 
 #include "confparse.h"
 
+// Include DDE headers for Windows
+#ifdef _WIN32
+#include <ddeml.h>
+#endif
+
 class PDFBridgeSumatra : public PDFBridge {
 private:
 	static PDFBridgeSumatra *instance; // Keep a pointer to singleton instance for non-C++-aware DDE callback
@@ -35,7 +40,7 @@ private:
 
 	PDFBridgeSumatra(Confparse &obvconfig);
 
-	static HDDEDATA CALLBACK DdeCallback(UINT uType, UINT uFmt, HCONV hconv, HSZ hsz1, HSZ hsz2, HDDEDATA hdata, DWORD dwData1, DWORD dwData2);
+	static HDDEDATA CALLBACK DdeCallback(UINT uType, UINT uFmt, HCONV hconv, HSZ hsz1, HSZ hsz2, HDDEDATA hdata, ULONG_PTR dwData1, ULONG_PTR dwData2);
 	bool InitializeDDE();
 	bool StartDDEServer(const std::wstring &service, const std::wstring &topic);
 	bool ConnectDDEClient(const std::wstring &service, const std::wstring &topic);

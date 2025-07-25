@@ -54,6 +54,7 @@ public:
 
 	std::string FZKeyStr = "";
 	uint32_t FZKey[44] = {0};
+	std::string pdfSoftwarePath = "SumatraPDF.exe";
 
 	void SetFZKey(const char *keytext);
 

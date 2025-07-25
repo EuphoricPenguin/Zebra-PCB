@@ -80,6 +80,7 @@ set(SOURCES
 	FileFormats/CSTFile.cpp
 	FileFormats/FZFile.cpp
 	FileFormats/GenCADFile.cpp
+	FileFormats/XZZPCBFile.cpp
 	NetList.cpp
 	PartList.cpp
 	Renderers/Renderers.cpp
@@ -171,9 +172,36 @@ add_executable(${PROJECT_NAME_LOWER}
 	${ASSETS}
 )
 
-if(MINGW) # Dirty fix to force linking all libs (esp. libstdc++) statically for Windows
-	set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
-	set_target_properties(${PROJECT_NAME_LOWER} PROPERTIES LINK_SEARCH_END_STATIC 1)
+if(MINGW) # Enhanced static linking for fully portable Windows executable
+	# Comprehensive static linking flags
+	set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++ -Wl,-Bstatic -lpthread -Wl,-Bdynamic")
+	
+	# Force static linking for all libraries
+	set_target_properties(${PROJECT_NAME_LOWER} PROPERTIES 
+		LINK_SEARCH_START_STATIC 1
+		LINK_SEARCH_END_STATIC 1
+	)
+	
+	# Additional Windows libraries for static linking
+	target_link_libraries(${PROJECT_NAME_LOWER}
+		-static
+		-lwinmm
+		-lole32
+		-loleaut32
+		-limm32
+		-lversion
+		-lsetupapi
+		-luuid
+		-ladvapi32
+		-lshell32
+		-luser32
+		-lgdi32
+		-lcomdlg32
+		-lwinspool
+		-lkernel32
+		-lws2_32
+		-lpsapi
+	)
 elseif(APPLE)
 	set_target_properties(${PROJECT_NAME_LOWER} PROPERTIES MACOSX_BUNDLE_ICON_FILE ${PROJECT_NAME_LOWER})
 endif()
@@ -218,15 +246,14 @@ endif()
 if(MINGW)
 target_link_libraries(${PROJECT_NAME_LOWER}
 	SDL2::SDL2-static
+	SDL2::SDL2main
 )
 else()
 target_link_libraries(${PROJECT_NAME_LOWER}
 	SDL2::SDL2
-)
-endif()
-target_link_libraries(${PROJECT_NAME_LOWER}
 	SDL2::SDL2main
 )
+endif()
 
 install(TARGETS
 	${PROJECT_NAME_LOWER}

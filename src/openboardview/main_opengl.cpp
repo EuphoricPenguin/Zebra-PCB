@@ -18,6 +18,7 @@
 #include "FileFormats/FZFile.h"
 #include "confparse.h"
 #include "resource.h"
+#include <cmath>
 #include <SDL.h>
 #include <chrono>
 #include <memory>
