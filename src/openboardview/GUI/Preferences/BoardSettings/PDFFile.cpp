@@ -7,7 +7,8 @@
 
 namespace Preferences {
 
-PDFFile::PDFFile(::PDFFile &pdfFile) : pdfFile(pdfFile), pdfFileCopy(pdfFile) {
+PDFFile::PDFFile(::PDFFile &pdfFile) : pdfFile(pdfFile) {
+	// pdfFileCopy is initialized as nullptr and will be created when needed
 }
 
 void PDFFile::save() {
@@ -16,7 +17,9 @@ void PDFFile::save() {
 }
 
 void PDFFile::cancel() {
-	pdfFile = pdfFileCopy;
+	if (pdfFileCopy) {
+		pdfFile = *pdfFileCopy;
+	}
 }
 
 void PDFFile::clear() {
@@ -29,7 +32,8 @@ void PDFFile::render(bool shown) {
 
 	if (shown) {
 		if (!wasShown) { // Panel just got opened
-			pdfFileCopy = pdfFile; // Make a copy to be able to restore if cancelled
+			// Create a copy to be able to restore if cancelled
+			pdfFileCopy = std::make_unique<::PDFFile>(pdfFile);
 		}
 
 		ImGui::Text("PDF file settings");
@@ -46,10 +50,12 @@ void PDFFile::render(bool shown) {
 				pdfFile.path = path;
 			}
 		}
+	} else {
+		// Panel is closed, reset the copy
+		pdfFileCopy.reset();
 	}
 
 	wasShown = shown;
 }
 
 } // namespace Preferences
-

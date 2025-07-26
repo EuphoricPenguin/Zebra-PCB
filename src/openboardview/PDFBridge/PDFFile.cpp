@@ -7,8 +7,25 @@
 PDFFile::PDFFile(PDFBridge &pdfBridge) : pdfBridge(&pdfBridge) {
 }
 
+PDFFile::PDFFile(const PDFFile &other) : 
+  path(other.path), 
+  configFilepath(other.configFilepath),
+  pdfBridge(other.pdfBridge) {
+  // Note: pdfBridge is copied as a pointer (shallow copy)
+  // This is safe as long as the original PDFBridge object remains valid
+}
+
+PDFFile& PDFFile::operator=(const PDFFile &other) {
+  if (this != &other) {
+  	path = other.path;
+		configFilepath = other.configFilepath;
+		pdfBridge = other.pdfBridge; // Shallow copy of pointer
+	}
+	return *this;
+}
+
 void PDFFile::reload() {
-	if (this->pdfBridge == nullptr) {
+  if (this->pdfBridge == nullptr) {
 		SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", "PDFFile Could not reload: pdfBridge == nullptr");
 		return;
 	}
@@ -38,7 +55,6 @@ void PDFFile::loadFromConfig(const filesystem::path &filepath) {
 
 	Confparse confparse{};
 	confparse.Load(filepath);
-
 
 	std::string pdfFilePathStr{confparse.ParseStr("PDFFilePath", "")};
 	if (!pdfFilePathStr.empty())

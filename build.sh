@@ -66,6 +66,21 @@ if [ "$MSYS2" = "1" ] || [ -n "$MSYSTEM" ]; then
     color 1 "Failed to initialize submodules"
     exit 1
   fi
+  
+  # Fix for GLAD gl.xml file issue
+  if [ -f "src/glad/gl.xml" ]; then
+    if [ ! -s "src/glad/gl.xml" ] || [ "$(head -c 5 src/glad/gl.xml)" != "<?xml" ]; then
+      echo "$(color 3 'Fixing empty/corrupted gl.xml file...')"
+      # Remove the corrupted file if it exists
+      rm -f src/glad/gl.xml
+      # Try to download a fresh copy
+      if command -v curl >/dev/null 2>&1; then
+        curl -L -o src/glad/gl.xml https://github.com/KhronosGroup/OpenGL-Registry/raw/main/xml/gl.xml
+      elif command -v wget >/dev/null 2>&1; then
+        wget -O src/glad/gl.xml https://github.com/KhronosGroup/OpenGL-Registry/raw/main/xml/gl.xml
+      fi
+    fi
+  fi
 elif [ "$CROSS" = "mingw64" ]; then
   # Cross-compilation from Linux
   COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_TOOLCHAIN_FILE=../Toolchain-mingw64.cmake"
@@ -96,14 +111,72 @@ fi
 # Now compile the source code and install it in server's directory
 echo "$STRCOMPILE $PROJECT using $(color 4 $THREADS) $STRTHREADS ($BUILDTYPE build)"
 echo "Extra flags passed to CMake: $COMPILEFLAGS"
+
+# Add flags to reduce warnings that cause build failures with newer GCC
+COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_C_FLAGS=-Wno-return-local-addr -DCMAKE_CXX_FLAGS=-Wno-return-local-addr"
+
 cmake $COMPILEFLAGS ..
 [ "$?" != "0" ] && color 1 "CMAKE FAILED" && exit 1
-if `echo "$COMPILEFLAGS" | grep -q "DEBUG"`; then
-  make -j$THREADS install
-  [ "$?" != "0" ] && color 1 "MAKE INSTALL FAILED" && exit 1
+
+# Check which generator was used
+if [ -f "build.ninja" ]; then
+  BUILD_CMD="ninja"
 else
-  make -j$THREADS install/strip
-  [ "$?" != "0" ] && color 1 "MAKE INSTALL/STRIP FAILED" && exit 1
+  BUILD_CMD="make -j$THREADS"
+fi
+
+if `echo "$COMPILEFLAGS" | grep -q "DEBUG"`; then
+  $BUILD_CMD install
+  [ "$?" != "0" ] && color 1 "BUILD INSTALL FAILED" && exit 1
+else
+  # For release builds, use install target (Ninja doesn't have install/strip)
+  $BUILD_CMD install
+  [ "$?" != "0" ] && color 1 "BUILD INSTALL FAILED" && exit 1
+fi
+
+# Copy required DLLs for Windows execution
+if [ "$MSYS2" = "1" ] || [ -n "$MSYSTEM" ]; then
+  echo "$(color 2 'Copying required DLLs...')"
+  
+  # Copy DLLs to the installation directory (bin)
+  if [ -f "$LASTDIR/bin/openboardview.exe" ]; then
+    EXE_DIR="$LASTDIR/bin"
+  elif [ -f "../bin/openboardview.exe" ]; then
+    EXE_DIR="../bin"
+  else
+    EXE_DIR=""
+  fi
+  
+  if [ -n "$EXE_DIR" ] && [ -f "$EXE_DIR/openboardview.exe" ]; then
+    # Copy common MinGW DLLs
+    MINGW_BIN="/mingw64/bin"
+    if [ -d "$MINGW_BIN" ]; then
+      for dll in libwinpthread-1.dll libstdc++-6.dll libgcc_s_seh-1.dll; do
+        if [ -f "$MINGW_BIN/$dll" ]; then
+          cp "$MINGW_BIN/$dll" "$EXE_DIR/"
+          echo "Copied $dll to $EXE_DIR"
+        fi
+      done
+    fi
+  else
+    echo "$(color 3 'Warning: openboardview.exe not found in bin/, checking build directory...')"
+    # Fallback to build directory
+    if [ -f "src/openboardview/openboardview.exe" ]; then
+      EXE_DIR="src/openboardview"
+      # Copy common MinGW DLLs
+      MINGW_BIN="/mingw64/bin"
+      if [ -d "$MINGW_BIN" ]; then
+        for dll in libwinpthread-1.dll libstdc++-6.dll libgcc_s_seh-1.dll; do
+          if [ -f "$MINGW_BIN/$dll" ]; then
+            cp "$MINGW_BIN/$dll" "$EXE_DIR/"
+            echo "Copied $dll to $EXE_DIR"
+          fi
+        done
+      fi
+    else
+      echo "$(color 1 'Error: openboardview.exe not found in any location')"
+    fi
+  fi
 fi
 
 case "$(uname -s)" in
@@ -117,10 +190,17 @@ case "$(uname -s)" in
     [ "$?" != "0" ] && color 1 "MAKE PACKAGE FAILED" && exit 1
     ;;
   *)
-    # Give right execution permissions to executables
+    # Give right execution permissions to executables in bin directory
     cd $LASTDIR
-    cd bin
-    for i in openboardview; do chmod +x $i; done
+    if [ -d "bin" ]; then
+      cd bin
+      for i in openboardview; do
+        if [ -f "$i" ] || [ -f "$i.exe" ]; then
+          chmod +x $i*
+        fi
+      done
+      cd ..
+    fi
 
     ;;
 esac

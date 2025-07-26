@@ -12,10 +12,11 @@
 #include "filesystem_impl.h"
 
 #include "PDFBridge.h"
+#include "confparse.h"
 
 // Requires forward declaration in order to friend since it's from another namespace
 namespace Preferences {
-	class PDFFile;
+  class PDFFile;
 }
 
 class PDFBridge; // Forward declaration to solve circular includes
@@ -23,12 +24,14 @@ class PDFBridge; // Forward declaration to solve circular includes
 // Manages background image configuration attached to boardview file and currently shown image depending on current board side
 class PDFFile {
 private:
-	filesystem::path path;
+  filesystem::path path;
 	filesystem::path configFilepath{};
 
 	PDFBridge *pdfBridge = nullptr;
 public:
 	PDFFile(PDFBridge &pdfBridge);
+	PDFFile(const PDFFile &other); // Copy constructor
+	PDFFile& operator=(const PDFFile &other); // Assignment operator
 
 	void reload();
 	void close();

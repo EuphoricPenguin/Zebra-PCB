@@ -4,13 +4,14 @@
 #include "PDFBridge/PDFFile.h"
 
 #include <string>
+#include <memory>
 
 namespace Preferences {
 
 class PDFFile {
 private:
 	::PDFFile &pdfFile;
-	::PDFFile pdfFileCopy;
+	std::unique_ptr<::PDFFile> pdfFileCopy;
 public:
 	PDFFile(::PDFFile &PDFFile);
 
