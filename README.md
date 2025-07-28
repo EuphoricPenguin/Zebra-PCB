@@ -1,18 +1,9 @@
-## Open Board Viewer [![Build Status](https://travis-ci.org/OpenBoardView/OpenBoardView.svg?branch=master)](https://travis-ci.org/OpenBoardView/OpenBoardView)
+<div align="center">
+  <img src="asset/icon.png" width="150" alt="ZebraBV Logo"/>
+  <h1>ZebraBV</h1>
+</div>
 
-Linux SDL/ImGui edition software for viewing .brd files, intended as a drop-in
-replacement for the "Test_Link" software and "Landrex".
-
-
-[![Walkthrough of OpenBoardView R7.2](http://img.youtube.com/vi/6CrNRo1UP5g/0.jpg)](http://www.youtube.com/watch?v=6CrNRo1UP5g "OpenBoardView R7.2 demonstration, with voice-over")
-
-[![Demo Video](https://github.com/OpenBoardView/OpenBoardView/blob/master/asset/screenshot.png)]()
-
-
-![Common net pin halo](https://github.com/OpenBoardView/OpenBoardView/blob/master/asset/screenshot-halo.png)
-
-![Part searching](https://github.com/OpenBoardView/OpenBoardView/blob/master/asset/screenshot-partsearch.png)
-
+ZebraBV, based on OpenBoardView, is a fork of a fork that adds UX enhancements and support for building to Windows via MSYS2. ZebraBV is directly based on a fork by slimeinacloak that adds support for XZZ's .pcb file format. ZebraBV is developed chiefly using DeepSeek and should not be considered stable software.
 
 ### Features
 
@@ -25,66 +16,15 @@ replacement for the "Test_Link" software and "Landrex".
 - Adjustable DPI (for working on 2K/4K screens)
 - Works with multiple concurrent instances
 
-
-### TODO
-
-- Decode more board formats
-- Compound project/file format
-
-
 ### Prerequisites
 
-#### macOS
-	$ brew install cmake sdl2
+#### Windows
 
-If you get the following error after running `build.sh`:
+`pacman -sY`
 
-	urllib.error.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)>
+`pacman [insert deps here]`
 
-
-Run the script at `/Applications/Python3.x/Install Certificates.command`.
-
-
-#### Ubuntu
-
-For Ubuntu developers, you'll need the following packages at a minimum;
-
-	$ apt-get install git build-essential cmake libsdl2-dev libgtk-3-dev
-
-#### Fedora
-
-For Fedora, you will need the following packages at a minimum;
-
-	$ dnf groupinstall "Development Tools"
-
-	$ dnf install SDL2-devel gtk3-devel fontconfig-devel
-
-### Installation
-
-1. Clone the project
-```
-$ git clone --recursive 'https://github.com/OpenBoardView/OpenBoardView'
-```
-2. Build it
-```
-$ ./build.sh
-```
-3. Sign it (skip if you're not on running macOS)
-```
-$ codesign --force --deep --sign - ./openboardview.app
-```
-4. Run it!
-```
-$ ./bin/openboardview
-```
-...or...
-```
-$ ./openboardview.sh
-```
-...or...
-```
-$ open ./openboardview.app
-```
+`./build.sh`
 
 ### Usage
 

@@ -1,3 +1,6 @@
+find_package(ZLIB REQUIRED)
+find_package(SQLite3 REQUIRED)
+
 if(ENABLE_GL1)
 	add_definitions(-DENABLE_GL1)
 endif()
@@ -221,12 +224,12 @@ target_include_directories(${PROJECT_NAME_LOWER} PRIVATE
 
 target_link_libraries(${PROJECT_NAME_LOWER}
 	imgui
-	SQLite::SQLite3
+	SQLite3::SQLite3
 	mpc
+	ZLIB::ZLIB
 	${GLAD_LIBRARIES}
 	${COCOA_LIBRARY}
-	${ZLIB_LIBRARIES}
-	${FILESYSTEM_LIBRARIES}
+	stdc++fs
 	${CMAKE_DL_LIBS}
 )
 

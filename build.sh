@@ -115,7 +115,13 @@ echo "Extra flags passed to CMake: $COMPILEFLAGS"
 # Add flags to reduce warnings that cause build failures with newer GCC
 COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_C_FLAGS=-Wno-return-local-addr -DCMAKE_CXX_FLAGS=-Wno-return-local-addr"
 
-cmake $COMPILEFLAGS ..
+export MINGW_PREFIX="/mingw64"
+cmake $COMPILEFLAGS \
+  -DSQLite3_ROOT="$MINGW_PREFIX" \
+  -DCMAKE_POLICY_DEFAULT_CMP0065=NEW \
+  -DCMAKE_POLICY_DEFAULT_CMP0077=NEW \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+  ..
 [ "$?" != "0" ] && color 1 "CMAKE FAILED" && exit 1
 
 # Check which generator was used
@@ -139,15 +145,15 @@ if [ "$MSYS2" = "1" ] || [ -n "$MSYSTEM" ]; then
   echo "$(color 2 'Copying required DLLs...')"
   
   # Copy DLLs to the installation directory (bin)
-  if [ -f "$LASTDIR/bin/openboardview.exe" ]; then
+  if [ -f "$LASTDIR/bin/zebrabv.exe" ]; then
     EXE_DIR="$LASTDIR/bin"
-  elif [ -f "../bin/openboardview.exe" ]; then
+  elif [ -f "../bin/zebrabv.exe" ]; then
     EXE_DIR="../bin"
   else
     EXE_DIR=""
   fi
   
-  if [ -n "$EXE_DIR" ] && [ -f "$EXE_DIR/openboardview.exe" ]; then
+  if [ -n "$EXE_DIR" ] && [ -f "$EXE_DIR/zebrabv.exe" ]; then
     # Copy common MinGW DLLs
     MINGW_BIN="/mingw64/bin"
     if [ -d "$MINGW_BIN" ]; then
@@ -159,9 +165,9 @@ if [ "$MSYS2" = "1" ] || [ -n "$MSYSTEM" ]; then
       done
     fi
   else
-    echo "$(color 3 'Warning: openboardview.exe not found in bin/, checking build directory...')"
+    echo "$(color 3 'Warning: zebrabv.exe not found in bin/, checking build directory...')"
     # Fallback to build directory
-    if [ -f "src/openboardview/openboardview.exe" ]; then
+    if [ -f "src/openboardview/zebrabv.exe" ]; then
       EXE_DIR="src/openboardview"
       # Copy common MinGW DLLs
       MINGW_BIN="/mingw64/bin"
@@ -174,7 +180,7 @@ if [ "$MSYS2" = "1" ] || [ -n "$MSYSTEM" ]; then
         done
       fi
     else
-      echo "$(color 1 'Error: openboardview.exe not found in any location')"
+    echo "$(color 1 'Error: zebrabv.exe not found in any location')"
     fi
   fi
 fi
@@ -183,8 +189,8 @@ case "$(uname -s)" in
   *Darwin*)
     # Generate DMG
     if [ ! -z "$SIGNER" ]; then
-      codesign --deep --force --verbose --sign "$SIGNER" ../openboardview.app
-      codesign --deep --force --verbose --sign "$SIGNER" $DESTDIR/$COMPILEDIR/src/openboardview/openboardview.app
+      codesign --deep --force --verbose --sign "$SIGNER" ../zebrabv.app
+      codesign --deep --force --verbose --sign "$SIGNER" $DESTDIR/$COMPILEDIR/src/openboardview/zebrabv.app
     fi
     make package
     [ "$?" != "0" ] && color 1 "MAKE PACKAGE FAILED" && exit 1
@@ -194,7 +200,7 @@ case "$(uname -s)" in
     cd $LASTDIR
     if [ -d "bin" ]; then
       cd bin
-      for i in openboardview; do
+      for i in zebrabv; do
         if [ -f "$i" ] || [ -f "$i.exe" ]; then
           chmod +x $i*
         fi

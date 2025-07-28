@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5...3.27)
+# Set policies to avoid warnings
+cmake_policy(SET CMP0065 NEW)  # Honor link flags in try_compile()
+cmake_policy(SET CMP0077 NEW)  # option() honors normal variables
 # We now use project() VERSION parameter
 if(POLICY CMP0048)
 	cmake_policy(SET CMP0048 NEW)
@@ -22,7 +25,7 @@ endif()
 # VERSION must be up to 4 groups of digits separated by a period.
 # major.90 are alpha releases
 # major.95 are beta releases
-project(OpenBoardView VERSION 9.95.1)
+project(ZebraBV VERSION 9.95.1)
 
 # Include our project variables
 include("version.cmake")
@@ -107,6 +110,9 @@ configure_file("${PROJECT_SOURCE_DIR}/src/openboardview/version.in.h"
 include_directories("${PROJECT_BINARY_DIR}/include")
 
 add_subdirectory(asset)
+# Find SQLite3 package
+set(SQLite3_ROOT "C:/msys64/mingw64")
+find_package(SQLite3 REQUIRED)
 add_subdirectory(src)
 
 set(CPACK_BUNDLE_NAME "${PROJECT_NAME}")
@@ -121,7 +127,7 @@ endif()
 
 if(APPLE)
 	set(CPACK_GENERATOR DragNDrop CACHE STRING "List of generators to build packages with")
-	set(CPACK_DMG_VOLUME_NAME "OpenBoardView")
+	set(CPACK_DMG_VOLUME_NAME "ZebraBV")
 #	set(CPACK_DMG_FORMAT "UDRW") # Read-write DMG
 	set(CPACK_DMG_BACKGROUND_IMAGE ${CMAKE_CURRENT_SOURCE_DIR}/asset/screenshot.png)
 	set(CPACK_DMG_DS_STORE ${CMAKE_CURRENT_SOURCE_DIR}/asset/DMG.DS_Store)
