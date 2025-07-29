@@ -8,6 +8,7 @@
 [submodule "src/glad"]
 	path = src/glad
 	url = https://github.com/Dav1dde/glad.git
+	branch = a5ca31c88a4cc5847ea012629aff3690f261c7c4
 [submodule "src/imgui"]
 	path = src/imgui
 	url = https://github.com/ocornut/imgui.git
@@ -21,3 +22,6 @@
 [submodule "src/mpc"]
 	path = src/mpc
 	url = https://github.com/orangeduck/mpc.git
+[submodule "src.glad"]
+	url = https://github.com/Dav1dde/glad.git
+	branch = a5ca31c88a4cc5847ea012629aff3690f261c7c4

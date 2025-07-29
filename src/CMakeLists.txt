@@ -20,34 +20,38 @@ if(NOT UTF8_INCLUDE_DIR)
 endif()
 
 ## zlib ##
-find_package(ZLIB)
-if(NOT ZLIB_FOUND)
-	execute_process(
-		COMMAND git submodule update --init src/zlib
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-	)
-	execute_process( # Dirty workaround to prevent zlib from building examples
-		COMMAND sed "/^# Example binaries$/,$d" -i src/zlib/CMakeLists.txt
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-	)
+execute_process(
+	COMMAND git submodule update --init src/zlib
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+execute_process( # Dirty workaround to prevent zlib from building examples
+	COMMAND sed "/^# Example binaries$/,$d" -i src/zlib/CMakeLists.txt
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
 
-	set(SKIP_INSTALL_FILES YES)
-	set(SKIP_INSTALL_HEADERS NO)
-	add_subdirectory(zlib)
+set(SKIP_INSTALL_FILES YES)
+set(SKIP_INSTALL_HEADERS NO)
+add_subdirectory(zlib)
 
-	if(WIN32)
-		set(ZLIB_LIBRARIES zlibstatic CACHE INTERNAL "zlib library")
-	else()
-		set(ZLIB_LIBRARIES z CACHE INTERNAL "zlib library")
-	endif()
-	set(ZLIB_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/zlib ${CMAKE_BINARY_DIR}/src/zlib)
+if(WIN32)
+	set(ZLIB_LIBRARIES zlibstatic CACHE INTERNAL "zlib library")
+else()
+	set(ZLIB_LIBRARIES z CACHE INTERNAL "zlib library")
 endif()
+set(ZLIB_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/zlib ${CMAKE_BINARY_DIR}/src/zlib)
+set(ZLIB_FOUND TRUE)
 
 ## SQLite3 ##
-find_package(SQLite3)
-if(NOT SQLITE3_FOUND)
-	add_subdirectory(sqlite3)
-endif()
+execute_process(
+	COMMAND git submodule update --init src/sqlite3
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)
+add_library(SQLite3 STATIC ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3/sqlite3.c)
+target_include_directories(SQLite3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3)
+set(SQLITE3_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3)
+set(SQLITE3_LIBRARY SQLite3)
+set(SQLITE3_FOUND TRUE)
+add_library(SQLite3::SQLite3 ALIAS SQLite3)
 
 ## glad ##
 execute_process(
@@ -60,6 +64,11 @@ set(GLAD_EXTENSIONS "GL_EXT_texture_compression_s3tc,GL_OES_element_index_uint" 
 set(GLAD_NO_LOADER ON CACHE BOOL "Disable loader" FORCE) # We're using SDL2 loader
 set(GLAD_REPRODUCIBLE ON CACHE BOOL "Reproducible build" FORCE)
 add_subdirectory(glad)
+
+## Ensure ZLIB paths are properly set ##
+set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/zlib)
+set(ZLIB_LIBRARY zlibstatic)
+set(ZLIB_FOUND TRUE)
 
 ## SDL2 ##
 find_package(SDL2 REQUIRED CONFIG)

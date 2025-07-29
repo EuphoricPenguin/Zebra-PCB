@@ -67,19 +67,16 @@ if [ "$MSYS2" = "1" ] || [ -n "$MSYSTEM" ]; then
     exit 1
   fi
   
-  # Fix for GLAD gl.xml file issue
-  if [ -f "src/glad/gl.xml" ]; then
-    if [ ! -s "src/glad/gl.xml" ] || [ "$(head -c 5 src/glad/gl.xml)" != "<?xml" ]; then
-      echo "$(color 3 'Fixing empty/corrupted gl.xml file...')"
-      # Remove the corrupted file if it exists
-      rm -f src/glad/gl.xml
-      # Try to download a fresh copy
-      if command -v curl >/dev/null 2>&1; then
-        curl -L -o src/glad/gl.xml https://github.com/KhronosGroup/OpenGL-Registry/raw/main/xml/gl.xml
-      elif command -v wget >/dev/null 2>&1; then
-        wget -O src/glad/gl.xml https://github.com/KhronosGroup/OpenGL-Registry/raw/main/xml/gl.xml
-      fi
-    fi
+  # Fix for GLAD generation
+  echo "$(color 3 'Ensuring fresh OpenGL specification...')"
+  rm -f src/glad/gl.xml
+  if command -v curl >/dev/null 2>&1; then
+    curl -L -o src/glad/gl.xml https://raw.githubusercontent.com/Dav1dde/glad/refs/heads/glad2/glad/files/gl.xml
+  fi
+  # Verify the downloaded file
+  if [ ! -s "src/glad/gl.xml" ] || [ "$(head -c 5 src/glad/gl.xml)" != "<?xml" ]; then
+    echo "$(color 1 'Failed to download valid gl.xml specification')"
+    exit 1
   fi
 elif [ "$CROSS" = "mingw64" ]; then
   # Cross-compilation from Linux
@@ -117,7 +114,6 @@ COMPILEFLAGS="$COMPILEFLAGS -DCMAKE_C_FLAGS=-Wno-return-local-addr -DCMAKE_CXX_F
 
 export MINGW_PREFIX="/mingw64"
 cmake $COMPILEFLAGS \
-  -DSQLite3_ROOT="$MINGW_PREFIX" \
   -DCMAKE_POLICY_DEFAULT_CMP0065=NEW \
   -DCMAKE_POLICY_DEFAULT_CMP0077=NEW \
   -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
